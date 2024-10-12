@@ -24,16 +24,16 @@ jobs:
           echo “Running tests...”
           npm run test
   
-  # publish:
-  #   executor: docker/docker
-  #   steps:
-  #     - setup_remote_docker
-  #     - checkout
-  #     - docker/check
-  #     - docker/build:
-  #         image: jonnywony/node-test
-  #     - docker/push:
-  #         image: jonnywony/node-test
+  publish:
+    executor: docker/docker
+    steps:
+      - setup_remote_docker
+      - checkout
+      - docker/check
+      - docker/build:
+          image: jonnywony/node-test
+      - docker/push:
+          image: jonnywony/node-test
 
 workflows:
   simple_workflow:
@@ -42,6 +42,6 @@ workflows:
       - test:
           requires:
             - build
-      # - publish:
-      #     requires:
-      #       - test
+      - publish:
+          requires:
+            - test
