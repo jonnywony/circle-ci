@@ -29,7 +29,10 @@ jobs:
     steps:
       - setup_remote_docker
       - checkout
-      - docker/check
+      - docker/check:
+          auth:
+            username: jonnywony
+            password: $DOCKERHUB_PASSWORD
       - docker/build:
           image: jonnywony/node-test
       - docker/push:
