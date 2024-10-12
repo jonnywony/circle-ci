@@ -35,6 +35,21 @@ jobs:
       - docker/push:
           image: jonnywony/node-test
 
+  deploy:
+    docker:
+    - image: cimg/node:16.10
+    steps:
+    - setup_remote_docker      
+    - heroku/install
+    - checkout
+    - run:
+        name: Heroku Container Push
+        command: | 
+            heroku container:login
+            heroku stack:set container -a jonathan-su-devops
+            heroku container:push web -a jonathan-su-devops
+            heroku container:release web -a jonathan-su-devops
+
 workflows:
   simple_workflow:
     jobs:
@@ -45,3 +60,6 @@ workflows:
       - publish:
           requires:
             - test
+      - deploy:
+          requires:
+            - publish
