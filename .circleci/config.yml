@@ -2,7 +2,8 @@ version: 2.1
 orbs:
   node: circleci/node@5.0.1
   docker: circleci/docker@2.1.4
-  heroku: circleci/heroku@2.0
+  snyk: snyk/snyk@1.5.0
+  # heroku: circleci/heroku@2.0
 jobs:
   build:
     docker:
@@ -25,41 +26,57 @@ jobs:
           echo “Running tests...”
           npm run test
   
-  publish:
-    executor: docker/docker
-    steps:
-      - setup_remote_docker
-      - checkout
-      - docker/check
-      - docker/build:
-          image: jonnywony/node-test
-      - docker/push:
-          image: jonnywony/node-test
+  # publish:
+  #   executor: docker/docker
+  #   steps:
+  #     - setup_remote_docker
+  #     - checkout
+  #     - docker/check
+  #     - docker/build:
+  #         image: jonnywony/node-test
+  #     - docker/push:
+  #         image: jonnywony/node-test
 
-  deploy:
-    executor: heroku/default
-    steps:
-    - setup_remote_docker      
-    - heroku/install
-    - checkout
-    - run:
-        name: Heroku Container Push
-        command: | 
-            heroku container:login
-            heroku stack:set container -a jonathan-su-devops
-            heroku container:push web -a jonathan-su-devops
-            heroku container:release web -a jonathan-su-devops
+  # deploy:
+  #   executor: heroku/default
+  #   steps:
+  #   - setup_remote_docker      
+  #   - heroku/install
+  #   - checkout
+  #   - run:
+  #       name: Heroku Container Push
+  #       command: | 
+  #           heroku container:login
+  #           heroku stack:set container -a jonathan-su-devops
+  #           heroku container:push web -a jonathan-su-devops
+  #           heroku container:release web -a jonathan-su-devops
+    scan:
+      docker:
+        - image: cimg/node:16.10
+      environment:
+        IMAGE_NAME: jonnywony/node-test
+      steps:
+        - checkout
+        - setup_remote_docker
+        - docker/check
+        - run: docker build -t $IMAGE_NAME .
+        - snyk/scan:
+            docker-image-name: $IMAGE_NAME
+        # - snyk/install
+        # - run: |
+        #     snyk code test
+       
 
 workflows:
   simple_workflow:
-    jobs:
-      - build
-      - test:
-          requires:
-            - build
-      - publish:
-          requires:
-            - test
-      - deploy:
-          requires:
-            - publish
+      jobs:
+        - build
+        - test:
+            requires:
+              - build
+        # - publish:
+        #     requires:
+        #       - test
+        # - deploy:
+        #     requires:
+        #       - publish
