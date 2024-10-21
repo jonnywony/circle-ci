@@ -62,9 +62,19 @@ jobs:
       - run: docker build -t $IMAGE_NAME .
       - snyk/scan:
           docker-image-name: $IMAGE_NAME
-      # - snyk/install
-      # - run: |
-      #     snyk code test
+  codescan:
+    docker:
+      - image: cimg/node:16.10
+    environment:
+      IMAGE_NAME: jonnywony/node-test
+    steps:
+      - checkout
+      - setup_remote_docker
+      - docker/check
+      - run: docker build -t $IMAGE_NAME .
+      - snyk/install
+      - run: |
+          snyk code test
       
 
 workflows:
@@ -81,5 +91,8 @@ workflows:
         #     requires:
         #       - publish
         - scan:
+            requires:
+              - build
+        - codescan:
             requires:
               - build
